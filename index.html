@@ -60,7 +60,6 @@ pre {
   color: #060;
 }
 
-
 </style>
 <script type="text/javascript" src="https://blobastor.us/api.js"></script>
 </head>
@@ -142,9 +141,9 @@ pre {
   <div class="desc">
     <b>The authors of all books in the store</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $.store.book[*].author
-      <li class="jsonselect"> .store .book .author
+      <li l="rql">
+      <li l="jsonpath"> $.store.book[*].author
+      <li l="jsonselect"> .store .book .author
     </ol>
   </div>
 </div>
@@ -154,9 +153,9 @@ pre {
   <div class="desc">
     <b>All authors</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $..author
-      <li class="jsonselect"> .author
+      <li l="rql">
+      <li l="jsonpath"> $..author
+      <li l="jsonselect"> .author
     </ol>
   </div>
 </div>
@@ -166,9 +165,9 @@ pre {
   <div class="desc">
     <b>All things in store, which are some books and a red bicycle.</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $.store.*
-      <li class="jsonselect"> .store > *
+      <li l="rql">
+      <li l="jsonpath"> $.store.*
+      <li l="jsonselect"> .store > *
     </ol>
   </div>
 </div>
@@ -178,9 +177,9 @@ pre {
   <div class="desc">
     <b>The price of everything in the store</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $.store..price
-      <li class="jsonselect"> .store .price
+      <li l="rql">
+      <li l="jsonpath"> $.store..price
+      <li l="jsonselect"> .store .price
     </ol>
   </div>
 </div>
@@ -190,9 +189,9 @@ pre {
   <div class="desc">
     <b>The third book</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $..book[2]
-      <li class="jsonselect"> .book > :nth-child(3)
+      <li l="rql">
+      <li l="jsonpath"> $..book[2]
+      <li l="jsonselect"> .book > :nth-child(3)
     </ol>
   </div>
 </div>
@@ -202,9 +201,9 @@ pre {
   <div class="desc">
     <b>the last book.</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $..book[-1:]
-      <li class="jsonselect"> .book > :last-child
+      <li l="rql">
+      <li l="jsonpath"> $..book[-1:]
+      <li l="jsonselect"> .book > :last-child
     </ol>
   </div>
 </div>
@@ -214,22 +213,25 @@ pre {
   <div class="desc">
     <b>All books less than 10 US dollars</b>
     <ol>
-      <li class="rql">
-      <li class="jsonpath"> $..book[?(@.price<10)]
-      <li class="jsonselect"> .book:has(.price:expr(x < 10))
+      <li l="rql">
+      <li l="jsonpath"> $..book[?(@.price<10)]
+      <li l="jsonselect"> .book:has(.price:expr(x < 10))
     </ol>
   </div>
 </div>
 </div>
 
 <div id="results">
-hyar R them results:
+<span class="verb">Loading</span> results...  <span class="num"></span> surveys taken...  Showing <span class="got">0</span>/<span class="max">..</span> data points.
 </div>
 
 </body>
 <script src="jquery-1.6.1.min.js"></script>
 <script>
+
 $BS = Blobastorus;
+
+$BS.setScope("TDQT");
 
 var g_username = undefined;
 
@@ -240,31 +242,95 @@ $BS.getUser(function(username, error) {
     g_username = username;
     $(".username").text(username);
     $("#holdonasec").fadeIn(700, function() {
-      $BS.getBlob({user: g_username, scope: "TDQT"}, function(blob, error) {
+      $BS.getBlob(function(blob, error) {
         $("#holdonasec").fadeOut(200, function() {
           if (blob) {
-            $("#results").fadeIn(700);
-            // XXX: fetch results...
+            loadResults();
           } else {
             $("#survey").fadeIn(700);
-            // XXX: Setup survey...
+            surveySetup();
           }
         });
       });
     });
   }
+});
 
-  $("#survey li").click(function()  {
+
+// :random awesome for jquery, cred:
+// http://blog.mastykarz.nl/jquery-random-filter/
+jQuery.jQueryRandom = 0;
+jQuery.extend(jQuery.expr[":"],
+{
+    random: function(a, i, m, r) {
+        if (i == 0) {
+            jQuery.jQueryRandom = Math.floor(Math.random() * r.length);
+        };
+        return i == jQuery.jQueryRandom;
+    }
+});
+
+function surveySetup(iterations) {
+  // jumble everything!
+  $("#survey .step").each(function() {
+    var newKids = [];
+    while (newKids.length < 3) {
+      var n = $(this).find("li:random");
+      n.detach();
+      newKids.push(n);                              
+    }
+    $(this).find("ol").append(newKids[0]).append(newKids[1]).append(newKids[2]);
+  });
+   $("#survey li").click(function()  {
     $(this).parent().find("li").removeClass("booyah");
     $(this).addClass("booyah");
+    var node = this;
+    setTimeout(function() {
+      $(node).parent().parent().parent().hide("medium", doneCheck);
+    }, 300);
   });
+}
 
-});
+function doneCheck() {
+  if ($("#survey .step:visible").length === 0) {
+     // lets generate the results blob
+     var ar = [];
+     $("#survey .booyah").each(function (){
+       ar.push($(this).attr("l"));
+     });
+     $BS.setBlob(ar, function() {
+       $("#survey").fadeOut("slow", function() {
+         $("#results").fadeIn("fast");
+       });
+     });
+  }
+}
 
 $(document).ready(function() {
    // activate the signin link
    $("#intro a").click(function() { $BS.redirectUser("http://localhost:8100/index.html#fuckyeah"); });
 });
+
+function loadResults() {
+  var usars = [];
+
+  $("#holdonasec").fadeIn(100, function() {
+    // XXX: it's a bug that scope is require here.  didn't we setscope?
+    $BS.listUsers("TDQT", function(users) {
+      $("#results .num").text(users.length);      
+      var num = users.length > 30 ? 30 : users.length;
+      $("#results .max").text(num);
+      $("#holdonasec").hide();
+      $("#results").fadeIn(700);
+      while (num > 0) {
+        usars.push(users.splice(Math.floor(Math.random() * users.length)
+      }
+    });
+  });
+
+  // XXX: fetch results...
+
+}
 
 </script>
 
