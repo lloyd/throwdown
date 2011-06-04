@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>The Document Querying Throwdown</title>
+<link href='http://fonts.googleapis.com/css?family=Permanent+Marker' rel='stylesheet' type='text/css'>
+<style type="text/css">
+
+body { margin: auto; font: 13px/1.5 Helvetica, Arial, 'Liberation Sans', FreeSans, sans-serif; }
+a:link, a:visited { font-style: italic; text-decoration: none; color: #008; }
+a:hover { border-bottom: 2px solid black ; }
+.number { font-family: 'Permanent Marker', arial, serif; font-size: 4em; float: left; padding: 0 0 .5em 0; margin: 0; vertical-align: top; width: 1.3em}
+.title { font-family: 'Permanent Marker', arial, serif; font-size: 2em; font-weight: bold; text-align: center; margin-top: 1.5em; margin-bottom: 1.5em; }
+#intro { text-align: center;}
+.step { width: 600px; margin: auto; margin-top: 1em;}
+.desc { padding-top: 1.5em; min-height: 4.5em;}
+.output {
+  font-family: 'lucida console', monaco, 'andale mono', 'bitstream vera sans mono', consolas, monospace;
+  border: 3px solid #666;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  padding: .5em;
+  margin: .5em;
+  color: #ccc;
+  background-color: #333;
+/*  white-space: pre;*/
+  font-size: .9em;
+  width:600px;
+  word-wrap: break-word;
+}
+#survey, #intro, #results, #holdonasec {
+  display: none;
+}
+body > div {
+  font-size: 1.2em; width: 600px; margin: auto; 
+}
+.username { font-weight: bold; }
+pre {
+  font-family: 'lucida console', monaco, 'andale mono', 'bitstream vera sans mono', consolas, monospace;
+  padding: 1em;
+  font-size: .8em;
+  background-color: #333;
+  color: #aaa;
+  border-radius: .5em, .5em, .5em, .5em;
+  -moz-border-radius: .5em;
+  -webkit-border-radius: .5em;
+  border: .5em solid #666;
+}
+.desc li {
+  margin-left: 8em;
+  font-family: 'lucida console', monaco, 'andale mono', 'bitstream vera sans mono', consolas, monospace;
+}
+
+.desc li {
+  color: #666;
+  cursor: pointer;
+}
+
+.desc li.booyah {
+  color: #060;
+}
+
+
+</style>
+<script type="text/javascript" src="https://blobastor.us/api.js"></script>
+</head>
+<body>
+<div class="title">
+  The Document Querying Throwdown
+</div>
+
+<div id="intro">
+  <p>
+    This website attempts to figure out what the most awesome querying language is for JSON documents.
+    It does this by asking you a series of questions.
+  </p>
+  <p>
+    <a href="#">Sign in with your twitter account</a> to get started.
+  </p>
+  <p>
+    (I <b>will NOT</b> write to your twitter stream.  Twitter auth is so you can't vote twice.)
+  </p>
+</div>
+
+<div id="holdonasec">
+<div class="intro">
+  HI <span class="username"></span>!  PLEASE WAIT, PROCESSING!!
+</div>
+</div>
+
+<div id="survey">
+<div class="intro">
+
+<p>
+  Hello <span class="username"></span>. below you'll find seven
+  questions.  A question is just a little human language that specifies some
+  subset of the JSON document immediately below.  All you have to do is pick from the
+  presented options which you feel is <i>the most natural</i> looking way to represent that
+  question in a computer language.
+</p>
+<p>
+  Here's that JSON document (<a href="http://goessner.net/articles/JsonPath/">taken from goessner.net</a>):
+</p>
+</div>
+
+<code><pre>
+  { "store": {
+    "book": [
+      { "category": "reference",
+        "author": "Nigel Rees",
+        "title": "Sayings of the Century",
+        "price": 8.95
+      },
+      { "category": "fiction",
+        "author": "Evelyn Waugh",
+        "title": "Sword of Honour",
+        "price": 12.99
+      },
+      { "category": "fiction",
+        "author": "Herman Melville",
+        "title": "Moby Dick",
+        "isbn": "0-553-21311-3",
+        "price": 8.99
+      },
+      { "category": "fiction",
+        "author": "J. R. R. Tolkien",
+        "title": "The Lord of the Rings",
+        "isbn": "0-395-19395-8",
+        "price": 22.99
+      }
+    ],
+    "bicycle": {
+      "color": "red",
+      "price": 19.95
+    }
+  }
+}
+</pre></code>
+
+<div class="step">
+  <div class="number">1.</div>
+  <div class="desc">
+    <b>The authors of all books in the store</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $.store.book[*].author
+      <li class="jsonselect"> .store .book .author
+    </ol>
+  </div>
+</div>
+
+<div class="step">
+  <div class="number">2.</div>
+  <div class="desc">
+    <b>All authors</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $..author
+      <li class="jsonselect"> .author
+    </ol>
+  </div>
+</div>
+
+<div class="step">
+  <div class="number">3.</div>
+  <div class="desc">
+    <b>All things in store, which are some books and a red bicycle.</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $.store.*
+      <li class="jsonselect"> .store > *
+    </ol>
+  </div>
+</div>
+
+<div class="step">
+  <div class="number">4.</div>
+  <div class="desc">
+    <b>The price of everything in the store</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $.store..price
+      <li class="jsonselect"> .store .price
+    </ol>
+  </div>
+</div>
+
+<div class="step">
+  <div class="number">5.</div>
+  <div class="desc">
+    <b>The third book</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $..book[2]
+      <li class="jsonselect"> .book > :nth-child(3)
+    </ol>
+  </div>
+</div>
+
+<div class="step">
+  <div class="number">6.</div>
+  <div class="desc">
+    <b>the last book.</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $..book[-1:]
+      <li class="jsonselect"> .book > :last-child
+    </ol>
+  </div>
+</div>
+
+<div class="step">
+  <div class="number">7.</div>
+  <div class="desc">
+    <b>All books less than 10 US dollars</b>
+    <ol>
+      <li class="rql">
+      <li class="jsonpath"> $..book[?(@.price<10)]
+      <li class="jsonselect"> .book:has(.price:expr(x < 10))
+    </ol>
+  </div>
+</div>
+</div>
+
+<div id="results">
+hyar R them results:
+</div>
+
+</body>
+<script src="jquery-1.6.1.min.js"></script>
+<script>
+$BS = Blobastorus;
+
+var g_username = undefined;
+
+$BS.getUser(function(username, error) {
+  if (!username) {
+    $("#intro").fadeIn(700);
+  } else {
+    g_username = username;
+    $(".username").text(username);
+    $("#holdonasec").fadeIn(700, function() {
+      $BS.getBlob({user: g_username, scope: "TDQT"}, function(blob, error) {
+        $("#holdonasec").fadeOut(200, function() {
+          if (blob) {
+            $("#results").fadeIn(700);
+            // XXX: fetch results...
+          } else {
+            $("#survey").fadeIn(700);
+            // XXX: Setup survey...
+          }
+        });
+      });
+    });
+  }
+
+  $("#survey li").click(function()  {
+    $(this).parent().find("li").removeClass("booyah");
+    $(this).addClass("booyah");
+  });
+
+});
+
+$(document).ready(function() {
+   // activate the signin link
+   $("#intro a").click(function() { $BS.redirectUser("http://localhost:8100/index.html#fuckyeah"); });
+});
+
+</script>
+
+</html>
