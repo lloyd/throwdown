@@ -289,7 +289,7 @@ $BS.getUser(function(username, error) {
     $(".username").text(username);
     $("#holdonasec").fadeIn(700, function() {
       $BS.getBlob(function(blob, error) {
-        if (blob && false) {
+        if (blob) {
           loadResults();
         } else {
           $("#holdonasec").fadeOut(200, function() {
