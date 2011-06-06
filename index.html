@@ -5,8 +5,14 @@
 <link href='http://fonts.googleapis.com/css?family=Permanent+Marker' rel='stylesheet' type='text/css'>
 <style type="text/css">
 
-body { margin: auto; font: 13px/1.5 Helvetica, Arial, 'Liberation Sans', FreeSans, sans-serif; }
-a:link, a:visited { font-style: italic; text-decoration: none; color: #008; }
+body {
+  margin: auto;
+  font: 13px/1.5 Helvetica, Arial, 'Liberation Sans', FreeSans, sans-serif;
+  background-color: #333;
+  color: #ddd;
+}
+
+a:link, a:visited { font-style: italic; text-decoration: none; color: #66e; }
 a:hover { border-bottom: 2px solid black ; }
 .number { font-family: 'Permanent Marker', arial, serif; font-size: 4em; float: left; padding: 0 0 .5em 0; margin: 0; vertical-align: top; width: 1.3em}
 .title { font-family: 'Permanent Marker', arial, serif; font-size: 2em; font-weight: bold; text-align: center; margin-top: 1.5em; margin-bottom: 1.5em; }
@@ -34,6 +40,12 @@ a:hover { border-bottom: 2px solid black ; }
 body > div {
   font-size: 1.2em; width: 600px; margin: auto; 
 }
+
+
+body > div#results {
+  width: 800px;
+}
+
 .username { font-weight: bold; }
 pre {
   font-family: 'lucida console', monaco, 'andale mono', 'bitstream vera sans mono', consolas, monospace;
@@ -58,6 +70,26 @@ pre {
 
 .desc li.booyah {
   color: #060;
+}
+
+#viz {
+  background-color: #333;
+  color: #aaa;
+  border-radius: .5em, .5em, .5em, .5em;
+  -moz-border-radius: .5em;
+  -webkit-border-radius: .5em;
+  width: 640;
+  height: 320;
+}
+
+#results .header {
+  text-align: center;
+  font-size: 90%;
+  margin: 1em 0 .2em 0;
+}
+
+.vizCont {
+  font-family: 'Permanent Marker', arial, serif; 
 }
 
 </style>
@@ -92,13 +124,13 @@ pre {
 
 <p>
   Hello <span class="username"></span>. below you'll find seven
-  questions.  A question is just a little human language that specifies some
-  subset of the JSON document immediately below.  All you have to do is pick from the
-  presented options which you feel is <i>the most natural</i> looking way to represent that
-  question in a computer language.
+  questions.  A question is just a little language that describes a specific
+  part of the JSON document below.  All you have to do is pick from the
+  presented options which you feel is the <i>best</i> looking way
+  to represent the question in a computer language.
 </p>
 <p>
-  Here's that JSON document (<a href="http://goessner.net/articles/JsonPath/">taken from goessner.net</a>):
+  Here's the JSON document (<a href="http://goessner.net/articles/JsonPath/">taken from goessner.net</a>):
 </p>
 </div>
 
@@ -144,6 +176,7 @@ pre {
       <li l="rql">
       <li l="jsonpath"> $.store.book[*].author
       <li l="jsonselect"> .store .book .author
+      <li l="javascript"> var a = []; for (var i = 0; i < x.store.book.length; i++) a.push(x.store.book[i].author;
     </ol>
   </div>
 </div>
@@ -156,6 +189,7 @@ pre {
       <li l="rql">
       <li l="jsonpath"> $..author
       <li l="jsonselect"> .author
+      <li l="javascript"> var a = []; for (var i = 0; i < x.store.book.length; i++) a.push(x.store.book[i].author);
     </ol>
   </div>
 </div>
@@ -168,6 +202,7 @@ pre {
       <li l="rql">
       <li l="jsonpath"> $.store.*
       <li l="jsonselect"> .store > *
+      <li l="javascript"> 
     </ol>
   </div>
 </div>
@@ -180,6 +215,7 @@ pre {
       <li l="rql">
       <li l="jsonpath"> $.store..price
       <li l="jsonselect"> .store .price
+      <li l="javascript"> 
     </ol>
   </div>
 </div>
@@ -192,6 +228,7 @@ pre {
       <li l="rql">
       <li l="jsonpath"> $..book[2]
       <li l="jsonselect"> .book > :nth-child(3)
+      <li l="javascript"> obj.store.book[2];
     </ol>
   </div>
 </div>
@@ -204,6 +241,7 @@ pre {
       <li l="rql">
       <li l="jsonpath"> $..book[-1:]
       <li l="jsonselect"> .book > :last-child
+      <li l="javascript"> obj.store.book[obj.store.book.length - 1];
     </ol>
   </div>
 </div>
@@ -222,11 +260,19 @@ pre {
 </div>
 
 <div id="results">
+<div class="header">
 <span class="verb">Loading</span> results...  <span class="num"></span> surveys taken...  Showing <span class="got">0</span>/<span class="max">..</span> data points.
+</div>
+<div class="vizCont">
+<div style="float: right;">JSONPath</div><div>JavaScript</div>
+<div id="viz"></div>
+<div style="float: right;">RQL</div><div>JSONSelect</div>
+</div>
 </div>
 
 </body>
 <script src="jquery-1.6.1.min.js"></script>
+<script src="raphael-min.js"></script>
 <script>
 
 $BS = Blobastorus;
@@ -243,14 +289,14 @@ $BS.getUser(function(username, error) {
     $(".username").text(username);
     $("#holdonasec").fadeIn(700, function() {
       $BS.getBlob(function(blob, error) {
-        $("#holdonasec").fadeOut(200, function() {
-          if (blob) {
-            loadResults();
-          } else {
+        if (blob && false) {
+          loadResults();
+        } else {
+          $("#holdonasec").fadeOut(200, function() {
             $("#survey").fadeIn(700);
             surveySetup();
-          }
-        });
+          });
+        }
       });
     });
   }
@@ -308,11 +354,52 @@ function doneCheck() {
 
 $(document).ready(function() {
    // activate the signin link
-   $("#intro a").click(function() { $BS.redirectUser("http://localhost:8100/index.html#fuckyeah"); });
+   $("#intro a").click(function() {
+      $BS.redirectUser("http://localhost:8100/index.html#fuckyeah");
+   });
 });
 
 function loadResults() {
   var usars = [];
+  var colors = ["#f00", "#0f0", "#00f", "#cc0", "#c0c", "#0cc"];
+
+  var paper = Raphael("viz", 800, 400);
+
+  var l = {
+    "javascript": { x: 0, y: 0 },
+    "jsonselect": { x: 0, y: 400 },
+    "jsonpath":   { x: 800, y: 0 },
+    "rql":        { x: 800, y: 400 }                              
+  };
+
+  function loadOneUser() {
+    if (usars.length === 0) return;
+    var u = usars.shift();
+
+    setTimeout(function() {
+        var ar = u;                            
+        console.log(ar);
+//    $BS.getBlob(u, function(ar, error) {
+        var x = 0, y = 0;
+        for (var i = 0; i < ar.length; i++) {
+            console.log(ar[i]);
+            x += l[ar[i]].x;
+            y += l[ar[i]].y;
+        }
+        x /= ar.length;
+        y /= ar.length;
+        // randomize positioning a little bit
+        x += (Math.random() * (800 / 7)) - (800 / 14);
+        y += (Math.random() * (400 / 7)) - (400 / 14);
+        if (x>897) x = 797;
+        if (y>447) y = 447;
+        var circle = paper.circle(x, y, 4 + (4 * Math.random() - 2));
+        var color = colors[Math.floor(Math.random() * colors.length)];
+        circle.attr("fill", "#f00");
+        circle.attr("stroke", "#fff");
+        $("#results .got").text(parseInt($("#results .got").text(),10)+1);             loadOneUser();
+    }, 0);
+  }  
 
   $("#holdonasec").fadeIn(100, function() {
     // XXX: it's a bug that scope is require here.  didn't we setscope?
@@ -322,16 +409,22 @@ function loadResults() {
       $("#results .max").text(num);
       $("#holdonasec").hide();
       $("#results").fadeIn(700);
-      while (num > 0) {
-        usars.push(users.splice(Math.floor(Math.random() * users.length)
+/*      while (num-- > 0) {
+        usars.push(users.splice(Math.floor(Math.random() * users.length)));
       }
+*/
+      var o = ["javascript", "jsonselect", "jsonpath", "rql"];
+      for (var i = 0; i < 7000; i++) {
+        var a = [];
+        for (var j = 0; j < 7; j++) {
+          a.push(o[Math.floor(Math.random() * o.length)]);
+        }                            
+        usars.push(a);
+
+      }
+      loadOneUser();
     });
   });
-
-  // XXX: fetch results...
-
 }
-
 </script>
-
 </html>
